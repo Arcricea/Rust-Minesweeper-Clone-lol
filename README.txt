@@ -6,9 +6,11 @@ Using winit/wgpu.
 - "Restart" via Tab to clear the instance buffer and delete the board, and then click Spacebar to make a new board / fill the instance buffer
 
 ##Installation
-`git clone https://github.com/Arcricea/Rust-Minesweeper-Clone-lol
+```
+git clone https://github.com/Arcricea/Rust-Minesweeper-Clone-lol
 cd Rust-Minesweeper-Clone-lol
-cargo build`
+cargo build
+```
 
 ##To do:
 // GRAPHICS
