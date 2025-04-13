@@ -10,8 +10,9 @@ Install rust using rustup if you don't have it - https://www.rust-lang.org/tools
 ```
 git clone https://github.com/Arcricea/Rust-Minesweeper-Clone-lol
 cd Rust-Minesweeper-Clone-lol
-cargo build
+cargo run
 ```
+I will set up cargo build later with build.rs for sprite copying
 
 ## To do:
 ### GRAPHICS
@@ -31,3 +32,5 @@ cargo build
 ### GAMEPLAY 
 - You can start with a mine? This is so sad.
 
+### MISC
+- build.rs 
