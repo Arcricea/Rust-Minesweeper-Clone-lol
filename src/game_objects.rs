@@ -36,7 +36,7 @@ pub fn create_hashmap() -> HashMap<String, Vec4> {
 pub fn create_minefield(sprites: HashMap<String, Vec4>) -> (Vec<InstanceRaw>, GameState) {
     // initialize
     let mut objects: Vec<InstanceRaw> = Vec::new();
-    let mut board: Vec<Tiles> = Vec::with_capacity((BOARD_WIDTH * BOARD_LENGTH).into());
+    let mut board: Vec<Tiles> = Vec::with_capacity((BOARD_WIDTH * BOARD_LENGTH) as usize);
     let mut mine_size: f32 = 1.0 / BOARD_LENGTH as f32;
     if BOARD_WIDTH > BOARD_LENGTH {
         mine_size = 1.0 / BOARD_WIDTH as f32;

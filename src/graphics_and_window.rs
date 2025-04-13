@@ -411,17 +411,31 @@ impl<'a> State<'a> {
 
     fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
-            let size = self.window.inner_size();
-            let smaller_dimension = size.width.min(size.height);
-            let size = winit::dpi::PhysicalSize::new(smaller_dimension, smaller_dimension);
-            self.size = size;
-
-            self.config.width = size.width;
-            self.config.height = size.height;
+            let old_aspect_ratio = (self.size.width as f32) / (self.size.height as f32);
+            self.size = new_size;
+            self.config.width = new_size.width;
+            self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
             self.depth_texture =
                 Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
+            let aspect_ratio = (new_size.width as f32) / (new_size.height as f32);
 
+            let current_world_width = self.camera_right - self.camera_left;
+            let current_world_height = self.camera_up - self.camera_down;
+            let current_center_x = self.camera_left + current_world_width / 2.0;
+            let current_center_y = self.camera_down + current_world_height / 2.0;
+
+            if aspect_ratio > old_aspect_ratio {
+                // Window became wider, maintain world height
+                let new_world_width = current_world_height * aspect_ratio;
+                self.camera_left = current_center_x - new_world_width / 2.0;
+                self.camera_right = current_center_x + new_world_width / 2.0;
+            } else if aspect_ratio < old_aspect_ratio {
+                // Window became narrower, maintain world width
+                let new_world_height = current_world_width / aspect_ratio;
+                self.camera_down = current_center_y - new_world_height / 2.0;
+                self.camera_up = current_center_y + new_world_height / 2.0;
+            }
             let camera = OrthographicCamera::new(
                 self.camera_left,
                 self.camera_right,
@@ -511,23 +525,39 @@ impl<'a> State<'a> {
         }
         //  println!("{}", self.time_delta.elapsed().as_nanos());
         if self.is_up_pressed {
-            self.camera_up += CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
-            self.camera_down += CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_up += CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_down += CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
             self.update_camera();
         }
         if self.is_down_pressed {
-            self.camera_up -= CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
-            self.camera_down -= CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_up -= CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_down -= CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
             self.update_camera();
         }
         if self.is_left_pressed {
-            self.camera_left -= CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
-            self.camera_right -= CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_left -= CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_right -= CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
             self.update_camera();
         }
         if self.is_right_pressed {
-            self.camera_left += CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
-            self.camera_right += CAMERA_MOVE_SPEED * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_left += CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
+            self.camera_right += CAMERA_MOVE_SPEED
+                * (self.camera_up - self.camera_down)
+                * self.time_delta.elapsed().as_nanos() as f32;
             self.update_camera();
         }
 
@@ -609,17 +639,38 @@ impl<'a> State<'a> {
     fn camera_zoom(&mut self, delta: MouseScrollDelta) {
         if let MouseScrollDelta::LineDelta(_x, y) = delta {
             if y > 0.0 {
+                let x1 = (self.camera_right + self.camera_left) / 2.0;
+                let y1 = (self.camera_up + self.camera_down) / 2.0;
+
                 self.camera_left *= 1.1;
                 self.camera_right *= 1.1;
                 self.camera_up *= 1.1;
                 self.camera_down *= 1.1;
+                let x2 = (self.camera_right + self.camera_left) / 2.0;
+                let y2 = (self.camera_up + self.camera_down) / 2.0;
+
+                self.camera_left -= x2 - x1;
+                self.camera_right -= x2 - x1;
+                self.camera_up -= y2 - y1;
+                self.camera_down -= y2 - y1;
             }
             if y < 0.0 {
+                let x1 = (self.camera_right + self.camera_left) / 2.0;
+                let y1 = (self.camera_up + self.camera_down) / 2.0;
+
                 self.camera_left /= 1.1;
                 self.camera_right /= 1.1;
                 self.camera_up /= 1.1;
                 self.camera_down /= 1.1;
+                let x2 = (self.camera_right + self.camera_left) / 2.0;
+                let y2 = (self.camera_up + self.camera_down) / 2.0;
+
+                self.camera_left -= x2 - x1;
+                self.camera_right -= x2 - x1;
+                self.camera_up -= y2 - y1;
+                self.camera_down -= y2 - y1;
             }
+
             self.update_camera();
         }
     }
@@ -1009,7 +1060,7 @@ pub async fn run() {
                                 last_cursor_position.unwrap().y
                             );
                             let mut board_position: Option<Vec2> = None;
-                            let mut unclicked_count: u16 = 0;
+                            let mut unclicked_count: u32 = 0;
                             let mut flagged_list: Option<Vec<usize>> = None;
 
                             for tiles in render_state.game_state.board.iter() {
@@ -1193,10 +1244,6 @@ pub async fn run() {
                     }
                     WindowEvent::CloseRequested => control_flow.exit(),
                     WindowEvent::Resized(physical_size) => {
-                        let size = physical_size.width.min(physical_size.height);
-                        let _ = render_state
-                            .window
-                            .request_inner_size(PhysicalSize::new(size, size));
                         render_state.resize(*physical_size);
                     }
                     _ => {}

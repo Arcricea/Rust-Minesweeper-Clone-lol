@@ -1,5 +1,7 @@
 use glam::{Mat4, Vec3};
 
+use crate::{BOARD_LENGTH, BOARD_WIDTH};
+
 pub struct OrthographicCamera {
     pub projection_matrix: Mat4,
     // You might want to store additional information like viewport size, etc.
@@ -8,6 +10,7 @@ pub struct OrthographicCamera {
 impl OrthographicCamera {
     pub fn new(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Self {
         let projection_matrix = Mat4::orthographic_rh(left, right, bottom, top, near, far);
+
         OrthographicCamera { projection_matrix }
     }
     // ... (update_projection method will be explained later)

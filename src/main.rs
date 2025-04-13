@@ -8,9 +8,9 @@ pub mod instance;
 pub mod texture;
 
 const CAMERA_MOVE_SPEED: f32 = 0.000000001;
-const BOARD_WIDTH: u16 = 15;
-const BOARD_LENGTH: u16 = 15;
-const MINE_COUNT: u8 = 10;
+const BOARD_WIDTH: u32 = 15;
+const BOARD_LENGTH: u32 = 15;
+const MINE_COUNT: u32 = 30;
 
 trait MineActiveTrait {
     fn is_active(&self) -> bool;
