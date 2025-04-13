@@ -16,7 +16,7 @@ I will set up cargo build later with build.rs for sprite copying
 
 ## To do:
 ### GRAPHICS
-- Non-square screen sizes makes it explode :c
+- ~~Non-square screen sizes makes it explode :c~~
 - ~~Camera Zoom is on the left, rather than in the middle~~
 
 ### UI
