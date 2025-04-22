@@ -3,7 +3,6 @@ use crate::camera::OrthographicCamera;
 use crate::game_objects::create_hashmap;
 use crate::game_objects::create_minefield;
 use crate::game_objects::Z_MINE;
-use crate::instance;
 use crate::instance::Instance;
 use crate::instance::InstanceRaw;
 use crate::texture::Texture;
@@ -14,22 +13,15 @@ use crate::Tiles;
 use crate::BOARD_LENGTH;
 use crate::BOARD_WIDTH;
 use crate::CAMERA_MOVE_SPEED;
-use glam::{Mat4, Vec2, Vec3, Vec4};
-use rand::prelude::*;
+use glam::{Vec2, Vec4};
 use std::collections::HashMap;
-use std::f32::consts::TAU;
-use std::hash::Hash;
-use std::ops::Not;
 use std::time::Instant;
-use wgpu::core::pipeline::RenderPipelineDescriptor;
-use winit::dpi::PhysicalPosition;
 
 use wgpu::util::DeviceExt;
 use winit::{
-    dpi::PhysicalSize,
     event::*,
     event_loop::EventLoop,
-    keyboard::{KeyCode, PhysicalKey},
+    keyboard::KeyCode,
     window::{Window, WindowBuilder},
 };
 
@@ -45,7 +37,6 @@ struct State<'a> {
     index_buffer: wgpu::Buffer,
     num_indices: u32,
     diffuse_bind_group: wgpu::BindGroup,
-    diffuse_textures: Vec<Texture>,
     camera: OrthographicCamera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
@@ -66,6 +57,8 @@ struct State<'a> {
     is_down_pressed: bool,
     is_left_pressed: bool,
     is_right_pressed: bool,
+    is_pgup_pressed: bool,
+    is_pgdown_pressed: bool,
     // Game Stuff
     time_delta: Instant,
     fps_count: u32,
@@ -376,7 +369,6 @@ impl<'a> State<'a> {
             index_buffer,
             num_indices,
             diffuse_bind_group,
-            diffuse_textures,
             camera,
             camera_uniform,
             camera_buffer,
@@ -395,6 +387,8 @@ impl<'a> State<'a> {
             is_down_pressed: false,
             is_left_pressed: false,
             is_right_pressed: false,
+            is_pgdown_pressed: false,
+            is_pgup_pressed: false,
             // Game Stuff
             time_delta: new_time_delta,
             one_sec_fps: new_fps_one_sec,
@@ -559,6 +553,14 @@ impl<'a> State<'a> {
                 * (self.camera_up - self.camera_down)
                 * self.time_delta.elapsed().as_nanos() as f32;
             self.update_camera();
+        }
+        if self.is_pgup_pressed {
+            self.camera_zoom(MouseScrollDelta::LineDelta(0.0, 1.0));
+            self.is_pgup_pressed = false;
+        }
+        if self.is_pgdown_pressed {
+            self.camera_zoom(MouseScrollDelta::LineDelta(0.0, -1.0));
+            self.is_pgdown_pressed = false;
         }
 
         self.time_delta = Instant::now();
@@ -982,9 +984,9 @@ pub async fn run() {
                         // and right and interpolate otherwise
 
                         let new_position: Vec2 = Vec2::new(
-                            (render_state.camera_left
+                            render_state.camera_left
                                 + position.x as f32 / render_state.size.width as f32
-                                    * (render_state.camera_right - render_state.camera_left)),
+                                    * (render_state.camera_right - render_state.camera_left),
                             (render_state.camera_up - render_state.camera_down)
                                 + (render_state.camera_down
                                     - position.y as f32 / render_state.size.height as f32
@@ -1021,6 +1023,12 @@ pub async fn run() {
                                         create_minefield(render_state.sprites.clone());
                                     render_state.create_instance("Tiles", &mut new_board);
                                 }
+                            }
+                            winit::keyboard::PhysicalKey::Code(KeyCode::PageUp) => {
+                                render_state.is_pgup_pressed = is_pressed;
+                            }
+                            winit::keyboard::PhysicalKey::Code(KeyCode::PageDown) => {
+                                render_state.is_pgdown_pressed = is_pressed;
                             }
                             winit::keyboard::PhysicalKey::Code(KeyCode::ArrowUp) => {
                                 render_state.is_up_pressed = is_pressed;

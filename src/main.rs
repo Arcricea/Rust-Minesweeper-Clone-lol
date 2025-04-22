@@ -3,7 +3,6 @@ use glam::Vec2;
 pub mod camera;
 pub mod game_objects;
 pub mod graphics_and_window;
-pub mod input_handling;
 pub mod instance;
 pub mod texture;
 
@@ -13,7 +12,7 @@ const BOARD_LENGTH: u32 = 15;
 const MINE_COUNT: u32 = 30;
 
 trait MineActiveTrait {
-    fn is_active(&self) -> bool;
+  
     fn set_active(&mut self, active: bool);
 }
 
@@ -23,9 +22,7 @@ pub struct CommonMineState {
 }
 
 impl MineActiveTrait for CommonMineState {
-    fn is_active(&self) -> bool {
-        self.active
-    }
+
 
     fn set_active(&mut self, active: bool) {
         self.active = active;
@@ -43,11 +40,6 @@ impl Mines {
         }
     }
 
-    fn is_active(&self) -> bool {
-        match self {
-            Mines::Default(state) => state.is_active(),
-        }
-    }
 
     fn get_index(&self) -> u16 {
         match self {

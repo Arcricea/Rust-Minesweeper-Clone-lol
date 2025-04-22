@@ -1,6 +1,5 @@
-use glam::{Mat4, Vec3};
+use glam::Mat4;
 
-use crate::{BOARD_LENGTH, BOARD_WIDTH};
 
 pub struct OrthographicCamera {
     pub projection_matrix: Mat4,
