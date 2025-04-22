@@ -2,7 +2,7 @@ Using winit/wgpu.
 
 # Current progress:
 - Minesweeper with Chording/Flags
-- Camera movement with up/down/left/right, Zoom out with mouse wheel
+- Camera movement with up/down/left/right, Zoom out with mouse wheel or pgup/pgdown
 - "Restart" via Tab to clear the instance buffer and delete the board, and then click Spacebar to make a new board / fill the instance buffer
 
 ## Installation
